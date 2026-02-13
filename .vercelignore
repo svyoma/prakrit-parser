@@ -1,0 +1,65 @@
+# Vercel ignore - exclude files not needed for deployment
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Testing
+test_*.py
+tests/
+pytest.ini
+.pytest_cache/
+test_corpus.json
+
+# Large SQL dump files (not needed - Turso is primary DB)
+*.sql
+
+# Documentation (not needed for runtime)
+*.md
+!README.md
+
+# Unused Python files
+analyze_app-copy.py
+convert_dict_to_sqlite.py
+download_databases.py
+feedback_cli.py
+database.py
+prakrit_noun_app.py
+app.py
+
+# Data directory (placeholder files)
+data/
+
+# Supabase
+supabase/
+
+# IDE / OS / Git
+.vscode/
+.idea/
+.git/
+.gitignore
+.gitattributes
+.DS_Store
+Thumbs.db
+nul
+
+# Environment
+.env
+.env.*
+!.env.example
+venv/
+env/
+
+# Logs
+*.log
+
+# Backup files
+*-copy.py
+
+# Claude Code
+.claude/
+
+# Mkdown files
+*.mkdown

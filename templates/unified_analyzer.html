@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unified Prakrit Parser - Verbs & Nouns</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;500;600&display=swap">
+  <style>
+    :root {
+      /* Vintage Modern Color Palette - warm, earthy tones */
+      --primary-color: #8B4513;           /* Saddle brown */
+      --secondary-color: #A0522D;         /* Sienna */
+      --accent-color: #DAA520;            /* Goldenrod */
+      --success-color: #6B8E23;           /* Olive drab */
+      --warning-color: #D2691E;           /* Chocolate */
+      --danger-color: #A52A2A;            /* Brown */
+      --text-dark: #3E2723;               /* Dark brown */
+      --text-medium: #5D4037;             /* Medium brown */
+      --text-light: #8D6E63;              /* Light brown */
+      --bg-paper: #F5F1E8;                /* Paper beige */
+      --bg-light: #FAF7F0;                /* Light cream */
+      --bg-white: #FFFEF7;                /* Warm white */
+      --bg-card: #FFF9E6;                 /* Light yellow */
+      --border-color: #D7CCC8;            /* Warm gray */
+      --border-accent: #BCAAA4;           /* Darker warm gray */
+      --shadow: 0 3px 12px rgba(62, 39, 35, 0.08);
+      --shadow-hover: 0 6px 24px rgba(62, 39, 35, 0.12);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Lora', 'Noto Sans Devanagari', serif;
+      background: var(--bg-paper);
+      background-image:
+        linear-gradient(0deg, transparent 24%, rgba(210, 180, 140, .03) 25%, rgba(210, 180, 140, .03) 26%, transparent 27%, transparent 74%, rgba(210, 180, 140, .03) 75%, rgba(210, 180, 140, .03) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(210, 180, 140, .03) 25%, rgba(210, 180, 140, .03) 26%, transparent 27%, transparent 74%, rgba(210, 180, 140, .03) 75%, rgba(210, 180, 140, .03) 76%, transparent 77%, transparent);
+      background-size: 50px 50px;
+      color: var(--text-dark);
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: var(--bg-white);
+      padding: 2.5rem 0;
+      text-align: center;
+      box-shadow: var(--shadow);
+      border-bottom: 3px solid var(--accent-color);
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    header h2 {
+      font-size: 1.1rem;
+      font-weight: 400;
+      opacity: 0.95;
+    }
+
+    header h3 {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      margin-top: 0.5rem;
+    }
+
+    header a {
+      color: var(--accent-color);
+      text-decoration: none;
+      transition: opacity 0.3s;
+    }
+
+    header a:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .info-banner {
+      background: #fff3cd;
+      color: #856404;
+      border: 2px solid #ffeeba;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem auto;
+      max-width: 900px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .info-banner strong {
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .form-card {
+      background: var(--bg-card);
+      padding: 2.5rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+      transition: all 0.3s;
+      border: 2px solid var(--border-color);
+    }
+
+    .form-card:hover {
+      box-shadow: var(--shadow-hover);
+      border-color: var(--border-accent);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--primary-color);
+      font-size: 1.1rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      transition: all 0.3s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: var(--text-light);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loader {
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top: 3px solid white;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    button.loading .loader {
+      display: inline-block;
+    }
+
+    button.loading span {
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #result-section {
+      margin-top: 2rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-button {
+      padding: 0.8rem 1.5rem;
+      background: var(--bg-white);
+      border: 2px solid var(--border-color);
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .tab-button:hover {
+      background: var(--bg-light);
+    }
+
+    .tab-button.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .tools {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tools button {
+      padding: 0.7rem 1.5rem;
+      font-size: 0.95rem;
+      background: var(--bg-white);
+      color: var(--primary-color);
+      border: 2px solid var(--primary-color);
+    }
+
+    .tools button:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .analysis-card {
+      background: var(--bg-card);
+      padding: 2.5rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+      border: 2px solid var(--border-color);
+    }
+
+    .analysis-card h3 {
+      color: var(--primary-color);
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--accent-color);
+    }
+
+    .analysis-item {
+      background: var(--bg-white);
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+      border-radius: 6px;
+      border-left: 4px solid var(--accent-color);
+      border-right: 1px solid var(--border-color);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.3s;
+    }
+
+    .analysis-item:hover {
+      transform: translateX(5px);
+      box-shadow: var(--shadow);
+      border-left-width: 6px;
+    }
+
+    .analysis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .analysis-type {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .analysis-type.verb {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .analysis-type.noun {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .confidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .confidence-high {
+      background: #c8e6c9;
+      color: #2e7d32;
+    }
+
+    .confidence-medium {
+      background: #fff9c4;
+      color: #f57f17;
+    }
+
+    .confidence-low {
+      background: #ffccbc;
+      color: #d84315;
+    }
+
+    .analysis-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .detail-item {
+      padding: 0.8rem;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: var(--primary-color);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .detail-value {
+      font-size: 1rem;
+      color: var(--text-dark);
+      font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+
+    .notes {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #e8f5e9;
+      border-left: 4px solid var(--success-color);
+      border-radius: 4px;
+      font-size: 0.95rem;
+    }
+
+    .notes ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .notes li {
+      padding: 0.3rem 0;
+    }
+
+    .notes li:before {
+      content: "• ";
+      color: var(--success-color);
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-light);
+      font-size: 1.1rem;
+    }
+
+    .no-results i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    footer {
+      background: var(--primary-color);
+      color: white;
+      text-align: center;
+      padding: 1.5rem 0;
+      margin-top: 3rem;
+    }
+
+    footer a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--primary-color);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow-hover);
+      display: none;
+      animation: slideIn 0.3s ease-out;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .toast.error {
+      background: var(--danger-color);
+    }
+
+    .toast.success {
+      background: var(--success-color);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+
+      .container {
+        padding: 0 1rem;
+      }
+
+      .analysis-details {
+        grid-template-columns: 1fr;
+      }
+
+      .tools {
+        flex-direction: column;
+      }
+
+      .tools button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1><i class="fas fa-book-open"></i> Unified Prakrit Parser</h1>
+      <h2>Comprehensive Analysis for Verbs & Nouns</h2>
+      <h3>Created by <a href="https://svyoma.github.io/about" target="_blank">svyoma</a></h3>
+    </div>
+  </header>
+
+  <div class="info-banner">
+    <strong><i class="fas fa-exclamation-triangle"></i> Beta Version</strong>
+    <p>This unified parser is under active development. It combines verb and noun analysis with intelligent ending-based guessing. Please verify results with authoritative sources.</p>
+  </div>
+
+  <div class="container">
+    <div class="form-card">
+      <form id="parse-form">
+        <div class="form-group">
+          <label for="prakrit-form">
+            <i class="fas fa-language"></i> Enter Prakrit Word or Form (Devanagari or Harvard-Kyoto):
+          </label>
+          <input
+            type="text"
+            id="prakrit-form"
+            name="form"
+            required
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="e.g., devehinto, karoti, puriso, कञ्ञा"
+          >
+        </div>
+
+        <button type="submit" id="submit-btn">
+          <span><i class="fas fa-search"></i> Analyze Form</span>
+          <div class="loader" id="loader"></div>
+        </button>
+      </form>
+    </div>
+
+    <div id="result-section" style="display: none;">
+      <div class="tools">
+        <button onclick="copyToClipboard()">
+          <i class="fas fa-copy"></i> Copy Results
+        </button>
+        <button onclick="exportJSON()">
+          <i class="fas fa-download"></i> Export JSON
+        </button>
+        <button onclick="clearResults()">
+          <i class="fas fa-times"></i> Clear
+        </button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-button active" onclick="showTab('all')">
+          <i class="fas fa-list"></i> All Analyses (<span id="count-all">0</span>)
+        </button>
+        <button class="tab-button" onclick="showTab('verbs')">
+          <i class="fas fa-running"></i> Verbs (<span id="count-verbs">0</span>)
+        </button>
+        <button class="tab-button" onclick="showTab('nouns')">
+          <i class="fas fa-cube"></i> Nouns (<span id="count-nouns">0</span>)
+        </button>
+      </div>
+
+      <div id="results-container"></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>Copyright © 2025 <a href="https://svyoma.github.io/about" target="_blank">Vyom A. Shah.</a> All rights reserved.</p>
+      <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">
+        Unified Parser v2.0 | <a href="https://github.com/khasoochi/parser4prakrit" target="_blank">GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let currentResults = null;
+    let currentFilter = 'all';
+
+    document.getElementById('parse-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+      const submitBtn = document.getElementById('submit-btn');
+
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/parse', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          currentResults = data;
+          displayResults(data);
+          showToast('Analysis complete!', 'success');
+        } else {
+          showToast(data.error || 'Analysis failed', 'error');
+        }
+      } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+      } finally {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }
+    });
+
+    function displayResults(data) {
+      const resultSection = document.getElementById('result-section');
+      const container = document.getElementById('results-container');
+
+      resultSection.style.display = 'block';
+
+      // Update counts
+      const allCount = data.analyses.length;
+      const verbCount = data.analyses.filter(a => a.type === 'verb').length;
+      const nounCount = data.analyses.filter(a => a.type === 'noun').length;
+
+      document.getElementById('count-all').textContent = allCount;
+      document.getElementById('count-verbs').textContent = verbCount;
+      document.getElementById('count-nouns').textContent = nounCount;
+
+      // Filter analyses based on current filter
+      let filteredAnalyses = data.analyses;
+      if (currentFilter === 'verbs') {
+        filteredAnalyses = data.analyses.filter(a => a.type === 'verb');
+      } else if (currentFilter === 'nouns') {
+        filteredAnalyses = data.analyses.filter(a => a.type === 'noun');
+      }
+
+      if (filteredAnalyses.length === 0) {
+        container.innerHTML = `
+          <div class="analysis-card">
+            <div class="no-results">
+              <i class="fas fa-search"></i>
+              <p>No ${currentFilter === 'all' ? '' : currentFilter} analyses found.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="analysis-card"><h3><i class="fas fa-chart-bar"></i> Analysis Results</h3>';
+
+      filteredAnalyses.forEach((analysis, index) => {
+        const confidenceClass =
+          analysis.confidence >= 0.8 ? 'confidence-high' :
+          analysis.confidence >= 0.5 ? 'confidence-medium' : 'confidence-low';
+
+        const confidenceLabel =
+          analysis.confidence >= 0.8 ? 'High' :
+          analysis.confidence >= 0.5 ? 'Medium' : 'Low';
+
+        html += `
+          <div class="analysis-item">
+            <div class="analysis-header">
+              <span class="analysis-type ${analysis.type}">${analysis.type}</span>
+              <span class="confidence-badge ${confidenceClass}">
+                <i class="fas fa-star"></i> ${confidenceLabel} (${(analysis.confidence * 100).toFixed(0)}%)
+              </span>
+            </div>
+
+            <div class="analysis-details">
+        `;
+
+        // Handle different word types with customized fields
+        if (analysis.type === 'verb') {
+          // Verb declensions: verb root, tense/mood, voice, person, number
+          html += `
+            <div class="detail-item">
+              <div class="detail-label">Verb Root</div>
+              <div class="detail-value">${analysis.root || 'Unknown'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Tense/Mood</div>
+              <div class="detail-value">${analysis.tense || 'Unknown'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Voice</div>
+              <div class="detail-value">${analysis.voice || 'active'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Person</div>
+              <div class="detail-value">${analysis.person || 'Unknown'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Number</div>
+              <div class="detail-value">${analysis.number || 'Unknown'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Source</div>
+              <div class="detail-value">${analysis.source || 'Unknown'}</div>
+            </div>
+          `;
+        } else if (analysis.type === 'participle') {
+          if (analysis.source === 'declined_participle') {
+            // Declined participle: root, type (Sanskrit), suffix, case, number, source, confidence
+            html += `
+              <div class="detail-item">
+                <div class="detail-label">Verb Root</div>
+                <div class="detail-value">${analysis.root || 'Unknown'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Participle Type</div>
+                <div class="detail-value">${analysis.sanskrit_term || analysis.participle_type || 'Unknown'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Participle Stem</div>
+                <div class="detail-value">${analysis.stem || 'Unknown'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Participle Suffix</div>
+                <div class="detail-value">${analysis.participle_suffix || 'N/A'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Noun Ending</div>
+                <div class="detail-value">-${analysis.noun_ending || 'N/A'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Case</div>
+                <div class="detail-value">${analysis.sanskrit_case || analysis.case || (analysis.cases ? analysis.cases.join('/') : 'Unknown')}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Number</div>
+                <div class="detail-value">${analysis.sanskrit_number || analysis.number || (analysis.numbers ? analysis.numbers.join('/') : 'Unknown')}</div>
+              </div>
+              ${analysis.gender ? `
+              <div class="detail-item">
+                <div class="detail-label">Gender</div>
+                <div class="detail-value">${analysis.sanskrit_gender || analysis.gender}</div>
+              </div>
+              ` : ''}
+              <div class="detail-item">
+                <div class="detail-label">Source</div>
+                <div class="detail-value">${analysis.source || 'Unknown'}</div>
+              </div>
+            `;
+          } else {
+            // Indeclinable participle: root, type (Sanskrit), suffix, source, confidence
+            html += `
+              <div class="detail-item">
+                <div class="detail-label">Verb Root</div>
+                <div class="detail-value">${analysis.root || 'Unknown'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Participle Type</div>
+                <div class="detail-value">${analysis.participle_type || 'Unknown'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Suffix</div>
+                <div class="detail-value">${analysis.suffix || 'N/A'}</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Source</div>
+                <div class="detail-value">${analysis.source || 'Unknown'}</div>
+              </div>
+              ${analysis.declined ? `
+              <div class="detail-item">
+                <div class="detail-label">Note</div>
+                <div class="detail-value">Declinable form</div>
+              </div>
+              ` : ''}
+            `;
+          }
+        } else if (analysis.type === 'noun') {
+          // Nominal declensions: stem, ending type, gender, suffix, case, number, source
+          html += `
+            <div class="detail-item">
+              <div class="detail-label">Stem</div>
+              <div class="detail-value">${analysis.stem || 'Unknown'}</div>
+            </div>
+            ${analysis.stem_ending_type ? `
+            <div class="detail-item">
+              <div class="detail-label">Ending Type</div>
+              <div class="detail-value">${analysis.stem_ending_type}</div>
+            </div>
+            ` : ''}
+            <div class="detail-item">
+              <div class="detail-label">Suffix</div>
+              <div class="detail-value">${analysis.suffix || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Gender</div>
+              <div class="detail-value">${analysis.gender || 'Unknown'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Case</div>
+              <div class="detail-value">${analysis.case || 'Unknown'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Number</div>
+              <div class="detail-value">${analysis.number || 'Unknown'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Source</div>
+              <div class="detail-value">${analysis.source || 'Unknown'}</div>
+            </div>
+          `;
+        } else {
+          // Fallback for unknown types
+          html += `
+            <div class="detail-item">
+              <div class="detail-label">Type</div>
+              <div class="detail-value">${analysis.type || 'Unknown'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Source</div>
+              <div class="detail-value">${analysis.source || 'Unknown'}</div>
+            </div>
+          `;
+        }
+
+        html += `
+            </div>
+        `;
+
+        if (analysis.notes && analysis.notes.length > 0) {
+          html += `
+            <div class="notes">
+              <ul>
+                ${analysis.notes.map(note => `<li>${note}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }
+
+        html += '</div>';
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function showTab(tab) {
+      currentFilter = tab;
+
+      // Update active tab button
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.closest('.tab-button').classList.add('active');
+
+      // Re-display results with filter
+      if (currentResults) {
+        displayResults(currentResults);
+      }
+    }
+
+    function copyToClipboard() {
+      if (!currentResults) return;
+
+      const text = JSON.stringify(currentResults, null, 2);
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard!', 'success');
+      }).catch(() => {
+        showToast('Failed to copy', 'error');
+      });
+    }
+
+    function exportJSON() {
+      if (!currentResults) return;
+
+      const dataStr = JSON.stringify(currentResults, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `prakrit_analysis_${Date.now()}.json`;
+      link.click();
+
+      showToast('Exported successfully!', 'success');
+    }
+
+    function clearResults() {
+      document.getElementById('result-section').style.display = 'none';
+      document.getElementById('prakrit-form').value = '';
+      currentResults = null;
+      showToast('Results cleared', 'success');
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

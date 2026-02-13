@@ -1,0 +1,4 @@
+Flask
+aksharamukha
+requests
+python-dotenv
