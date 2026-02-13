@@ -173,7 +173,7 @@ class TursoDatabase:
         except Exception:
             return None
 
-    def check_verb_form(self, form: str) -> Tuple[bool, Optional[str], Optional[Dict]]:
+    def check_verb_form(self, form: str) -> List[Tuple[str, Dict]]:
         """
         Check if a verb form exists in the database
 
@@ -181,11 +181,11 @@ class TursoDatabase:
             form: Verb form to check
 
         Returns:
-            Tuple of (found, root, grammatical_info)
+            List of (root, grammatical_info) tuples for all matching rows
         """
         if not self.connected:
             if not self.connect():
-                return False, None, None
+                return []
 
         try:
             rows = self._execute("""
@@ -200,25 +200,27 @@ class TursoDatabase:
                 FROM verb_forms vf
                 JOIN verb_roots vr ON vf.root_id = vr.root_id
                 WHERE vf.form = ?
-                LIMIT 1
+                LIMIT 50
             """, [form])
 
-            if rows and rows[0]:
-                row = rows[0]
-                return True, row[0], {
+            if not rows:
+                return []
+
+            results = []
+            for row in rows:
+                results.append((row[0], {
                     'tense': row[1],
                     'voice': row[2],
                     'mood': row[3],
                     'dialect': row[4],
                     'person': row[5],
                     'number': row[6]
-                }
-
-            return False, None, None
+                }))
+            return results
         except Exception:
-            return False, None, None
+            return []
 
-    def check_noun_form(self, form: str) -> Tuple[bool, Optional[str], Optional[Dict]]:
+    def check_noun_form(self, form: str) -> List[Tuple[str, Dict]]:
         """
         Check if a noun form exists in the database
 
@@ -226,11 +228,11 @@ class TursoDatabase:
             form: Noun form to check
 
         Returns:
-            Tuple of (found, stem, grammatical_info)
+            List of (stem, grammatical_info) tuples for all matching rows
         """
         if not self.connected:
             if not self.connect():
-                return False, None, None
+                return []
 
         try:
             rows = self._execute("""
@@ -242,22 +244,24 @@ class TursoDatabase:
                 FROM noun_forms nf
                 JOIN noun_stems ns ON nf.stem_id = ns.stem_id
                 WHERE nf.form = ?
-                LIMIT 1
+                LIMIT 50
             """, [form])
 
-            if rows and rows[0]:
-                row = rows[0]
-                return True, row[0], {
+            if not rows:
+                return []
+
+            results = []
+            for row in rows:
+                results.append((row[0], {
                     'gender': row[1],
                     'case': row[2],
                     'number': row[3]
-                }
-
-            return False, None, None
+                }))
+            return results
         except Exception:
-            return False, None, None
+            return []
 
-    def check_participle_form(self, form: str) -> Tuple[bool, Optional[str], Optional[Dict]]:
+    def check_participle_form(self, form: str) -> List[Tuple[str, Dict]]:
         """
         Check if a participle form exists in the database
 
@@ -265,11 +269,11 @@ class TursoDatabase:
             form: Participle form to check
 
         Returns:
-            Tuple of (found, root, grammatical_info)
+            List of (root, grammatical_info) tuples for all matching rows
         """
         if not self.connected:
             if not self.connect():
-                return False, None, None
+                return []
 
         try:
             rows = self._execute("""
@@ -283,22 +287,24 @@ class TursoDatabase:
                 FROM participle_forms pf
                 JOIN verb_roots vr ON pf.root_id = vr.root_id
                 WHERE pf.form = ?
-                LIMIT 1
+                LIMIT 50
             """, [form])
 
-            if rows and rows[0]:
-                row = rows[0]
-                return True, row[0], {
+            if not rows:
+                return []
+
+            results = []
+            for row in rows:
+                results.append((row[0], {
                     'participle_type': row[1],
                     'suffix': row[2],
                     'gender': row[3],
                     'case': row[4],
                     'number': row[5]
-                }
-
-            return False, None, None
+                }))
+            return results
         except Exception:
-            return False, None, None
+            return []
 
     def close(self):
         """Close database connection"""
