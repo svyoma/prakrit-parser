@@ -328,6 +328,14 @@
       color: #2e7d32;
     }
 
+    .attested-badge {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #2e7d32;
+      opacity: 0.75;
+      letter-spacing: 0.03em;
+    }
+
     .data-source-badge {
       font-size: 0.85rem;
       color: var(--text-medium);
@@ -675,10 +683,17 @@
           analysis.confidence >= 0.8 ? 'High' :
           analysis.confidence >= 0.5 ? 'Medium' : 'Low';
 
+        const sourceLabel = {
+          'attested_form': 'Database (attested)',
+          'ending_based_guess': 'Suffix analysis',
+          'declined_participle': 'Declined form'
+        }[analysis.source] || analysis.source || 'Unknown';
+
         html += `
           <div class="analysis-item">
             <div class="analysis-header">
               <span class="analysis-type ${analysis.type}">${analysis.type}</span>
+              ${analysis.source === 'attested_form' ? '<span class="attested-badge" title="Form found in database">✓ attested</span>' : ''}
               <span class="confidence-badge ${confidenceClass}">
                 <i class="fas fa-star"></i> ${confidenceLabel} (${(analysis.confidence * 100).toFixed(0)}%)
               </span>
@@ -713,7 +728,7 @@
             </div>
             <div class="detail-item">
               <div class="detail-label">Source</div>
-              <div class="detail-value">${analysis.source || 'Unknown'}</div>
+              <div class="detail-value">${sourceLabel}</div>
             </div>
           `;
         } else if (analysis.type === 'participle') {
@@ -756,7 +771,7 @@
               ` : ''}
               <div class="detail-item">
                 <div class="detail-label">Source</div>
-                <div class="detail-value">${analysis.source || 'Unknown'}</div>
+                <div class="detail-value">${sourceLabel}</div>
               </div>
             `;
           } else {
@@ -776,7 +791,7 @@
               </div>
               <div class="detail-item">
                 <div class="detail-label">Source</div>
-                <div class="detail-value">${analysis.source || 'Unknown'}</div>
+                <div class="detail-value">${sourceLabel}</div>
               </div>
               ${analysis.declined ? `
               <div class="detail-item">
@@ -817,7 +832,7 @@
             </div>
             <div class="detail-item">
               <div class="detail-label">Source</div>
-              <div class="detail-value">${analysis.source || 'Unknown'}</div>
+              <div class="detail-value">${sourceLabel}</div>
             </div>
           `;
         } else {
@@ -829,7 +844,7 @@
             </div>
             <div class="detail-item">
               <div class="detail-label">Source</div>
-              <div class="detail-value">${analysis.source || 'Unknown'}</div>
+              <div class="detail-value">${sourceLabel}</div>
             </div>
           `;
         }

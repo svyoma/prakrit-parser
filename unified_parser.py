@@ -81,11 +81,13 @@ except ImportError:
     HAS_FLASK = False
 
 try:
-    from aksharamukha import transliterate as aksh_transliterate
+    import warnings
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', category=SyntaxWarning)
+        from aksharamukha import transliterate as aksh_transliterate
     HAS_AKSHARAMUKHA = True
 except ImportError:
     HAS_AKSHARAMUKHA = False
-    print("Warning: aksharamukha not installed. Install with: pip install aksharamukha")
 
 # Initialize Flask app only if available
 if HAS_FLASK:
@@ -1268,7 +1270,7 @@ class PrakritUnifiedParser:
                 'type': 'noun',
                 'source': 'attested_form',
                 'confidence': 1.0,
-                'notes': [f"Form attested in noun_forms.db for stem '{attested_stem}'"]
+                'notes': []
             }
 
             # Add grammatical info if available from form_info
@@ -1427,7 +1429,7 @@ class PrakritUnifiedParser:
                 'type': 'verb',
                 'source': 'attested_form',
                 'confidence': 1.0,
-                'notes': [f"Form attested in verb_forms.db for root '{attested_root}'"]
+                'notes': []
             }
 
             # Add grammatical info if available from form_info
@@ -1598,7 +1600,7 @@ class PrakritUnifiedParser:
                         'suffix': info.get('suffix'),
                         'source': 'attested_form',
                         'confidence': 1.0,
-                        'notes': [f"Participle form attested in database for root '{root}'"]
+                        'notes': []
                     }
 
                     # Add Sanskrit term for participle type
@@ -1907,13 +1909,22 @@ class PrakritUnifiedParser:
                 if 'root' in analysis:
                     analysis['root_devanagari'] = self.transliterate_to_devanagari(analysis['root'])
 
+        # Take top 15 by confidence, but guarantee at least one analysis per type
+        # so that e.g. a declined participle isn't crowded out by many attested noun hits
+        top = all_analyses[:15]
+        seen_types = {a.get('type') for a in top}
+        for a in all_analyses[15:]:
+            if a.get('type') not in seen_types:
+                top.append(a)
+                seen_types.add(a.get('type'))
+
         return {
             'success': True,
             'original_form': text,
             'hk_form': word_hk,
             'script': original_script,
-            'data_source': self.data_source,  # Show which database is being used
-            'analyses': all_analyses[:15],  # Return top 15 analyses
+            'data_source': self.data_source,
+            'analyses': top,
             'total_found': len(all_analyses)
         }
 
