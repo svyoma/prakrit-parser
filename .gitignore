@@ -1,0 +1,147 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache/
+.dmypy.json
+
+# Flask
+instance/
+.webassets-cache
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+nul
+
+# Environment files (secrets - NEVER commit)
+.env
+.env.local
+.env.production
+# NOTE: .env.example IS committed (contains placeholders only)
+
+# Database files (auto-downloaded or from Turso)
+*.db
+
+# Large SQL dump files (not needed for deployment)
+*.sql
+!data/*.sql
+
+# Supabase local dev files
+supabase/.temp/
+
+# User feedback data
+user_feedback.json
+feedback_data.json
+analysis_history.json
+
+# Backup/copy files
+*-copy.py
+*-backup.py
+
+# Claude Code local settings
+.claude/
+
+# ========================================
+# Unused project files (kept on disk, not committed)
+# ========================================
+
+# Unused Python scripts (not imported by unified_parser.py)
+analyze_app.py
+app.py
+verb_analyzer.py
+noun_analyzer.py
+prakrit_noun_app.py
+database.py
+aksharamukha_api.py
+input_validation.py
+convert_dict_to_sqlite.py
+download_databases.py
+feedback_cli.py
+
+# Unused data files (Turso is primary database)
+verbs.json
+all_verb_forms.json
+data/
+
+# Supabase (not used)
+supabase/
+
+# Unused template (unified_analyzer.html is the active one)
+templates/analyzer.html
+
+# Git attributes (not needed)
+.gitattributes
+
+# Documentation files (README.md is the only doc needed)
+DATABASE_SETUP.md
+DICTIONARY_INTEGRATION_GUIDE.md
+FEEDBACK_GUIDE.md
+HOSTING_DICTIONARY.md
+IMPROVEMENTS.md
+PHASE1_IMPROVEMENTS.md
+TURSO_DATABASE.md
+UNIFIED_PARSER_README.md
+finetune.mkdown
+instructions.mkdown
+
+# Test files (not needed on GitHub for now)
+test_*.py
+test_corpus.json
