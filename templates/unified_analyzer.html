@@ -509,6 +509,163 @@
         width: 100%;
       }
     }
+
+    /* ===== Passage mode ===== */
+    .mode-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+    .mode-btn {
+      padding: 0.55rem 1.3rem;
+      background: var(--bg-white);
+      color: var(--text-medium);
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: none;
+    }
+    .mode-btn:hover:not(.active) {
+      border-color: var(--secondary-color);
+      color: var(--secondary-color);
+      transform: none;
+      box-shadow: none;
+    }
+    .mode-btn.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    #passage-input-group textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 0.9rem 1.2rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      resize: vertical;
+      transition: all 0.3s;
+      line-height: 1.9;
+      background: var(--bg-white);
+    }
+    #passage-input-group textarea:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+    }
+    /* Passage results */
+    #passage-section { margin-top: 2rem; }
+    .passage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .passage-header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--primary-color);
+    }
+    .passage-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-card);
+      box-shadow: var(--shadow);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .passage-table thead th {
+      background: var(--primary-color);
+      color: white;
+      padding: 0.85rem 1rem;
+      text-align: left;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .passage-row { cursor: pointer; transition: background 0.15s; }
+    .passage-row:hover { background: #fff3e0; }
+    .passage-row.expanded { background: #fdf8ec; }
+    .passage-row td, .passage-expansion td {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    .row-num { color: var(--text-light); font-size: 0.85rem; min-width: 2rem; text-align: center; }
+    .tok-display {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+    .summary-cell { font-size: 0.92rem; color: var(--text-medium); }
+    .summary-cell .tok-root { color: var(--primary-color); font-weight: 600; font-style: normal; }
+    .opts-pill {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      background: var(--bg-light);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 0.82rem;
+      color: var(--text-medium);
+      white-space: nowrap;
+    }
+    .passage-row.expanded .opts-pill {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    .punct-row td { color: var(--text-light); padding: 0.35rem 1rem; font-size: 1.1rem; }
+    .passage-expansion { background: #fafaf5; }
+    .expansion-inner {
+      padding: 0.75rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 0.65rem;
+    }
+    .mini-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-color);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+    }
+    .mini-card.auto { border-left-color: var(--success-color); background: #f5fbf0; }
+    .mini-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .mini-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .chip {
+      padding: 0.15rem 0.55rem;
+      background: var(--bg-paper);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 0.78rem;
+      color: var(--text-medium);
+    }
+    .chip strong { color: var(--primary-color); }
+    .auto-star { color: var(--success-color); font-size: 0.8rem; font-weight: 700; }
+    @media (max-width: 600px) {
+      .passage-table thead th:nth-child(3),
+      .passage-row td:nth-child(3),
+      .passage-expansion td { display: none; }
+      .passage-row td:nth-child(3) { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -527,8 +684,17 @@
 
   <div class="container">
     <div class="form-card">
+      <div class="mode-toggle">
+        <button type="button" id="mode-word" class="mode-btn active" onclick="setMode('word')">
+          <i class="fas fa-font"></i> Single Word
+        </button>
+        <button type="button" id="mode-passage" class="mode-btn" onclick="setMode('passage')">
+          <i class="fas fa-paragraph"></i> Passage
+        </button>
+      </div>
+
       <form id="parse-form">
-        <div class="form-group">
+        <div id="word-input-group" class="form-group">
           <label for="prakrit-form">
             <i class="fas fa-language"></i> Enter Prakrit Word or Form (Devanagari or Harvard-Kyoto):
           </label>
@@ -536,15 +702,26 @@
             type="text"
             id="prakrit-form"
             name="form"
-            required
             autocomplete="off"
             spellcheck="false"
             placeholder="e.g., devehinto, karoti, puriso, कञ्ञा"
           >
         </div>
 
+        <div id="passage-input-group" class="form-group" style="display:none">
+          <label for="prakrit-passage">
+            <i class="fas fa-paragraph"></i> Enter Prakrit Passage (Devanagari or Harvard-Kyoto):
+          </label>
+          <textarea
+            id="prakrit-passage"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="e.g., dhammo have rakkhati dhammacarI ।&#10;or paste Devanagari text…"
+          ></textarea>
+        </div>
+
         <button type="submit" id="submit-btn">
-          <span><i class="fas fa-search"></i> Analyze Form</span>
+          <span id="submit-label"><i class="fas fa-search"></i> Analyze Form</span>
           <div class="loader" id="loader"></div>
         </button>
       </form>
@@ -557,6 +734,9 @@
         </button>
         <button onclick="exportJSON()">
           <i class="fas fa-download"></i> Export JSON
+        </button>
+        <button onclick="exportCSV()">
+          <i class="fas fa-table"></i> Export CSV
         </button>
         <button onclick="clearResults()">
           <i class="fas fa-times"></i> Clear
@@ -580,6 +760,8 @@
 
       <div id="results-container"></div>
     </div>
+
+    <div id="passage-section" style="display:none"></div>
   </div>
 
   <footer>
@@ -596,9 +778,13 @@
   <script>
     let currentResults = null;
     let currentFilter = 'all';
+    let currentMode = 'word';
+    let passageResults = null;
+    let expandedPassageRows = new Set();
 
     document.getElementById('parse-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (currentMode === 'passage') { await analyzePassage(); return; }
 
       const form = e.target;
       const formData = new FormData(form);
@@ -910,6 +1096,27 @@
       showToast('Exported successfully!', 'success');
     }
 
+    function exportCSV() {
+      if (!currentResults || currentResults.length === 0) return;
+      const headers = ['Form','HK Form','#','Type','Root/Stem','Tense/Case','Person/Gender','Number','Ending','Confidence'];
+      const rows = currentResults.map((a, i) => {
+        const root = a.type === 'noun' ? (a.stem || '') : (a.root || a.potential_root || '');
+        const tc   = a.type === 'verb' ? (a.tense || '') : (a.case || '');
+        const pg   = a.type === 'verb' ? (a.person || '') : (a.gender || '');
+        const conf = ((a.confidence || 0) * 100).toFixed(1) + '%';
+        return [a.original_form||'', a.hk_form||'', i+1, a.type||'', root, tc, pg, a.number||'', a.ending||'', conf]
+          .map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+      });
+      const csv = [headers.join(','), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `prakrit_analysis_${(currentResults[0].original_form||'form').replace(/\s+/g,'_')}.csv`;
+      link.click();
+      showToast('Exported as CSV!', 'success');
+    }
+
     function clearResults() {
       document.getElementById('result-section').style.display = 'none';
       document.getElementById('prakrit-form').value = '';
@@ -925,6 +1132,257 @@
       setTimeout(() => {
         toast.classList.remove('show');
       }, 3000);
+    }
+
+    // ===== Passage mode =====
+
+    function setMode(mode) {
+      currentMode = mode;
+      const isPassage = mode === 'passage';
+      document.getElementById('mode-word').classList.toggle('active', !isPassage);
+      document.getElementById('mode-passage').classList.toggle('active', isPassage);
+      document.getElementById('word-input-group').style.display = isPassage ? 'none' : '';
+      document.getElementById('passage-input-group').style.display = isPassage ? '' : 'none';
+      // Hide previous results when switching modes
+      document.getElementById('result-section').style.display = 'none';
+      document.getElementById('passage-section').style.display = 'none';
+      document.getElementById('submit-label').innerHTML = isPassage
+        ? '<i class="fas fa-layer-group"></i> Analyze Passage'
+        : '<i class="fas fa-search"></i> Analyze Form';
+    }
+
+    async function analyzePassage() {
+      const passage = document.getElementById('prakrit-passage').value.trim();
+      if (!passage) { showToast('Please enter a passage', 'error'); return; }
+
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      try {
+        const resp = await fetch('/api/parse-passage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passage })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          passageResults = data;
+          renderPassageTable(data);
+          showToast(`Analyzed ${data.word_count} word${data.word_count !== 1 ? 's' : ''}`, 'success');
+        } else {
+          showToast(data.error || 'Passage analysis failed', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      } finally {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }
+    }
+
+    function renderPassageTable(data) {
+      const section = document.getElementById('passage-section');
+      section.style.display = 'block';
+      expandedPassageRows.clear();
+
+      let wordIdx = 0;
+      let rows = '';
+      (data.tokens || []).forEach((tok, i) => {
+        if (tok.is_punct) {
+          rows += `<tr class="punct-row"><td></td><td colspan="4">${escHtml(tok.token)}</td></tr>`;
+          return;
+        }
+        if (tok.error) {
+          rows += `<tr class="passage-row"><td class="row-num">${++wordIdx}</td><td class="tok-display">${escHtml(tok.token)}</td><td colspan="3" style="color:var(--danger-color);font-size:0.9rem">Error: ${escHtml(tok.error)}</td></tr>`;
+          return;
+        }
+        const wi = wordIdx++;
+        const a = tok.auto_selected;
+        const conf = a ? Math.round((a.confidence || 0) * 100) : 0;
+        const confCls = conf >= 80 ? 'confidence-high' : conf >= 50 ? 'confidence-medium' : 'confidence-low';
+        const confBadge = a
+          ? `<span class="confidence-badge ${confCls}" style="font-size:0.82rem;padding:0.25rem 0.7rem">${conf}%</span>`
+          : '<em style="color:var(--text-light)">—</em>';
+        const summary = a ? buildSummary(a) : '<em style="color:var(--text-light)">No analysis</em>';
+        const nOpts = tok.total_found || 0;
+
+        rows += `
+          <tr class="passage-row" id="prow-${wi}" onclick="togglePassageRow(${wi})">
+            <td class="row-num">${wi + 1}</td>
+            <td class="tok-display">${escHtml(tok.token)}</td>
+            <td class="summary-cell">${summary}</td>
+            <td>${confBadge}</td>
+            <td><span class="opts-pill">${nOpts} ▾</span></td>
+          </tr>
+          <tr class="passage-expansion" id="pexpand-${wi}" style="display:none">
+            <td></td>
+            <td colspan="4">
+              <div class="expansion-inner">${buildMiniCards(tok.analyses)}</div>
+            </td>
+          </tr>`;
+      });
+
+      section.innerHTML = `
+        <div class="passage-header">
+          <h3><i class="fas fa-layer-group"></i> Passage — ${data.word_count} word${data.word_count !== 1 ? 's' : ''}</h3>
+          <div class="tools" style="margin:0">
+            <button onclick="exportPassageJSON()" style="padding:0.6rem 1.2rem;font-size:0.9rem">
+              <i class="fas fa-download"></i> Export JSON
+            </button>
+            <button onclick="exportPassageCSV()" style="padding:0.6rem 1.2rem;font-size:0.9rem">
+              <i class="fas fa-table"></i> Export CSV
+            </button>
+            <button onclick="clearPassage()" style="padding:0.6rem 1.2rem;font-size:0.9rem">
+              <i class="fas fa-times"></i> Clear
+            </button>
+          </div>
+        </div>
+        <table class="passage-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Token</th><th>Best Analysis</th><th>Conf</th><th>Options</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+
+    function togglePassageRow(wi) {
+      const expRow = document.getElementById(`pexpand-${wi}`);
+      const mainRow = document.getElementById(`prow-${wi}`);
+      if (!expRow) return;
+      if (expandedPassageRows.has(wi)) {
+        expandedPassageRows.delete(wi);
+        expRow.style.display = 'none';
+        mainRow.classList.remove('expanded');
+      } else {
+        expandedPassageRows.add(wi);
+        expRow.style.display = '';
+        mainRow.classList.add('expanded');
+      }
+    }
+
+    function buildSummary(a) {
+      if (!a) return '<em>—</em>';
+      const esc = escHtml;
+      if (a.type === 'verb') {
+        const p = {'first':'1','second':'2','third':'3'}[a.person] || a.person || '?';
+        const n = (a.number || '').slice(0, 2) || '?';
+        const t = (a.tense || '').slice(0, 4) || '?';
+        return `verb &middot; ${p}${n}.${t} <span class="tok-root">${esc(a.root || '?')}</span>`;
+      }
+      if (a.type === 'noun') {
+        const c = (a.case || '?').slice(0, 3);
+        const n = (a.number || '?').slice(0, 3);
+        const g = a.gender ? a.gender[0].toUpperCase() : '?';
+        return `noun &middot; ${c}.${n}.${g} <span class="tok-root">${esc(a.stem || '?')}</span>`;
+      }
+      if (a.type === 'participle') {
+        const pt = (a.participle_type || 'part').replace(/_/g, ' ');
+        return `part &middot; ${pt} <span class="tok-root">${esc(a.root || '?')}</span>`;
+      }
+      return esc(a.type || '?');
+    }
+
+    function buildMiniCards(analyses) {
+      if (!analyses || analyses.length === 0)
+        return '<p style="color:var(--text-light);padding:0.5rem 0">No analyses found.</p>';
+      return analyses.map((a, idx) => {
+        const isAuto = idx === 0;
+        const conf = Math.round((a.confidence || 0) * 100);
+        const confCls = conf >= 80 ? 'confidence-high' : conf >= 50 ? 'confidence-medium' : 'confidence-low';
+        let chips = '';
+        if (a.type === 'verb') {
+          chips = [
+            `<span class="chip"><strong>Root</strong> ${escHtml(a.root||'?')}</span>`,
+            `<span class="chip"><strong>Tense</strong> ${escHtml(a.tense||'?')}</span>`,
+            `<span class="chip"><strong>Person</strong> ${escHtml(a.person||'?')}</span>`,
+            `<span class="chip"><strong>Num</strong> ${escHtml(a.number||'?')}</span>`,
+          ].join('');
+        } else if (a.type === 'noun') {
+          chips = [
+            `<span class="chip"><strong>Stem</strong> ${escHtml(a.stem||'?')}</span>`,
+            `<span class="chip"><strong>Case</strong> ${escHtml(a.case||'?')}</span>`,
+            `<span class="chip"><strong>Num</strong> ${escHtml(a.number||'?')}</span>`,
+            `<span class="chip"><strong>Gen</strong> ${escHtml(a.gender||'?')}</span>`,
+          ].join('');
+        } else if (a.type === 'participle') {
+          chips = [
+            `<span class="chip"><strong>Root</strong> ${escHtml(a.root||'?')}</span>`,
+            `<span class="chip"><strong>Type</strong> ${escHtml((a.participle_type||'?').replace(/_/g,' '))}</span>`,
+            a.case ? `<span class="chip"><strong>Case</strong> ${escHtml(a.case)}</span>` : '',
+            a.number ? `<span class="chip"><strong>Num</strong> ${escHtml(a.number)}</span>` : '',
+          ].join('');
+        }
+        return `<div class="mini-card${isAuto ? ' auto' : ''}">
+          <div class="mini-card-header">
+            <span class="analysis-type ${escHtml(a.type)}">${escHtml(a.type)}</span>
+            ${isAuto ? '<span class="auto-star">★ auto</span>' : ''}
+            <span class="confidence-badge ${confCls}" style="font-size:0.78rem;padding:0.2rem 0.6rem">${conf}%</span>
+          </div>
+          <div class="mini-chips">${chips}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function exportPassageJSON() {
+      if (!passageResults) return;
+      const blob = new Blob([JSON.stringify(passageResults, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `passage_analysis_${Date.now()}.json`;
+      a.click();
+      showToast('Exported!', 'success');
+    }
+
+    function exportPassageCSV() {
+      if (!passageResults || !passageResults.tokens) return;
+      const headers = ['#','Token','HK Form','Type','Root/Stem','Tense/Case','Person/Gender','Number','Ending','Confidence','Alternatives'];
+      const rows = [];
+      let wordNum = 0;
+      passageResults.tokens.forEach(tok => {
+        if (tok.is_punct) return;
+        wordNum++;
+        const a = tok.analyses && tok.analyses[0];
+        if (!a) {
+          rows.push([wordNum, tok.form||'', '', '', '', '', '', '', '', '', 0]
+            .map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+          return;
+        }
+        const root = a.type === 'noun' ? (a.stem || '') : (a.root || a.potential_root || '');
+        const tc   = a.type === 'verb' ? (a.tense || '') : (a.case || '');
+        const pg   = a.type === 'verb' ? (a.person || '') : (a.gender || '');
+        const conf = ((a.confidence || 0) * 100).toFixed(1) + '%';
+        const alts = (tok.analyses.length - 1);
+        rows.push([wordNum, tok.form||'', a.hk_form||'', a.type||'', root, tc, pg, a.number||'', a.ending||'', conf, alts]
+          .map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+      });
+      const csv = [headers.join(','), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `passage_analysis_${Date.now()}.csv`;
+      link.click();
+      showToast('Exported as CSV!', 'success');
+    }
+
+    function clearPassage() {
+      document.getElementById('passage-section').style.display = 'none';
+      document.getElementById('prakrit-passage').value = '';
+      passageResults = null;
+      expandedPassageRows.clear();
+      showToast('Cleared', 'success');
     }
   </script>
 </body>

@@ -8,6 +8,7 @@ import re
 import json
 import os
 from typing import Dict, List, Tuple, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Load .env file for local development (ignored on Vercel where env vars are set in dashboard)
 try:
@@ -1694,6 +1695,11 @@ class PrakritUnifiedParser:
             - type: participle type
             - confidence: confidence score
         """
+        # Normalize anusvara variants in the stem before suffix matching.
+        # Handles cases like aMta (M before dental t) → anta so the suffix
+        # table entry 'anta' matches regardless of how the nasal was spelled.
+        stem = self.normalize_input(stem)
+
         # Check against known participle suffixes
         for suffix, info in self.participle_suffixes.items():
             if stem.endswith(suffix):
@@ -1839,9 +1845,10 @@ class PrakritUnifiedParser:
                 'suggestions': ['Check input for forbidden characters', 'Use proper Prakrit transliteration']
             }
 
-        # Normalize and transliterate
+        # Transliterate first so Devanagari anusvara (ं → M) is visible to normalize_input,
+        # then normalize so M+dental (aMta → anta) is resolved before any analysis.
         original_script = self.detect_script(text)
-        word_hk = self.transliterate_to_hk(self.normalize_input(text))
+        word_hk = self.normalize_input(self.transliterate_to_hk(text))
 
         # Analyze as noun, verb, and participle
         noun_analyses = self.analyze_as_noun(word_hk)
@@ -1926,6 +1933,81 @@ class PrakritUnifiedParser:
             'data_source': self.data_source,
             'analyses': top,
             'total_found': len(all_analyses)
+        }
+
+    def parse_passage(self, text: str, max_workers: int = 8) -> dict:
+        """Analyze every word in a passage in parallel using a thread pool.
+
+        Each token is dispatched to self.parse() concurrently. This is ideal
+        for the I/O-bound Turso HTTP queries: a 20-word verse completes in
+        roughly the same wall-clock time as a single-word lookup.
+
+        Punctuation tokens (।, ॥, |, commas, etc.) are passed through
+        unchanged without being analyzed.
+
+        Args:
+            text:        Passage in Devanagari or Harvard-Kyoto.
+            max_workers: Thread pool size (default 8 — sufficient for a
+                         typical verse without hammering Turso).
+        Returns:
+            dict with 'tokens' list (order preserved) and 'word_count'.
+        """
+        PUNCT_RE = re.compile(r'^[।॥|.,;:!?()\-\'"]+$')
+
+        raw_tokens = text.strip().split()
+        if not raw_tokens:
+            return {'success': True, 'passage': text, 'tokens': [], 'word_count': 0}
+
+        token_list: List[dict] = []
+        for chunk in raw_tokens:
+            if PUNCT_RE.match(chunk):
+                token_list.append({'text': chunk, 'is_punct': True})
+            else:
+                core = chunk.strip('।॥|.,;:!?()-\'"')
+                token_list.append({'text': chunk, 'core': core or chunk, 'is_punct': False})
+
+        results: List[dict] = [None] * len(token_list)  # type: ignore[list-item]
+
+        def analyze_one(idx: int) -> Tuple[int, dict]:
+            tok = token_list[idx]
+            if tok['is_punct']:
+                return idx, {'token': tok['text'], 'is_punct': True}
+            try:
+                parsed = self.parse(tok['core'])
+                analyses = parsed.get('analyses', [])
+                return idx, {
+                    'token': tok['text'],
+                    'core': tok['core'],
+                    'is_punct': False,
+                    'analyses': analyses,
+                    'auto_selected': analyses[0] if analyses else None,
+                    'total_found': parsed.get('total_found', 0),
+                    'hk_form': parsed.get('hk_form', tok['core']),
+                }
+            except Exception as exc:
+                return idx, {
+                    'token': tok['text'],
+                    'core': tok['core'],
+                    'is_punct': False,
+                    'analyses': [],
+                    'auto_selected': None,
+                    'total_found': 0,
+                    'error': str(exc),
+                }
+
+        n_workers = min(max_workers, len(token_list))
+        with ThreadPoolExecutor(max_workers=n_workers) as pool:
+            futures = {pool.submit(analyze_one, i): i for i in range(len(token_list))}
+            for future in as_completed(futures):
+                idx, tok_result = future.result()
+                results[idx] = tok_result
+
+        word_count = sum(1 for t in results if t and not t.get('is_punct'))
+        return {
+            'success': True,
+            'passage': text,
+            'tokens': results,
+            'word_count': word_count,
         }
 
 # Initialize parser
@@ -2105,6 +2187,35 @@ if HAS_FLASK:
             return jsonify({
                 'error': str(e)
             }), 500
+
+    @app.route('/api/parse-passage', methods=['POST', 'OPTIONS'])
+    def api_parse_passage():
+        """Parallel passage analysis — analyzes all words in a passage concurrently."""
+        if request.method == 'OPTIONS':
+            response = jsonify({'status': 'ok'})
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+            response.headers.add('Access-Control-Allow-Methods', 'POST')
+            return response
+
+        try:
+            data = request.get_json(force=True, silent=True)
+        except Exception:
+            data = None
+        if not data:
+            data = request.form.to_dict()
+
+        passage = data.get('passage', '').strip()
+        if not passage:
+            return jsonify({'success': False, 'error': 'Please provide a passage'}), 400
+
+        try:
+            result = parser.parse_passage(passage)
+            response = jsonify(result)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'Passage analysis error: {str(e)}'}), 500
 
     @app.route('/api/status', methods=['GET'])
     def api_status():
