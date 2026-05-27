@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:eb3cfcf63cdd0a9a21abec51457ebec5dcc9019d94e0163a84afde02ea69804b
-size 267
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": ["templates/**", "*.py"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.py"
+    }
+  ]
+}
