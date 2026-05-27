@@ -600,6 +600,29 @@ class PrakritUnifiedParser:
                 'priority': 1,
                 'confidence': 0.5
             },
+            # Masculine nominative singular for a-stems (puriso, gAmo, gacchanto)
+            # Lower-priority than longer ablatives (tto, hinto, sunto) which already
+            # list 'o' in their blocks, so it only matches when no longer suffix wins.
+            'o': {
+                'cases': ['nominative'],
+                'numbers': ['singular'],
+                'genders': ['masculine'],
+                'must_precede': [],
+                'blocks': [],
+                'priority': 1,
+                'confidence': 0.75
+            },
+            # Masculine accusative singular and locative singular for a-stems.
+            # Magadhi also uses -e for masc nom sg.
+            'e': {
+                'cases': ['locative'],
+                'numbers': ['singular'],
+                'genders': ['masculine', 'neuter'],
+                'must_precede': [],
+                'blocks': [],
+                'priority': 1,
+                'confidence': 0.6
+            },
             # Feminine-specific endings (long vowels as part of stem, NOT stripped as suffix)
             'A': {
                 'cases': ['nominative', 'vocative', 'accusative'],
@@ -1177,6 +1200,11 @@ class PrakritUnifiedParser:
         elif suffix == 'M':
             return base
 
+        # Consonant-ending base with masc nom sg 'o': default to a-stem.
+        # e.g. base 'puris' + 'o' → stem 'purisa'; 'kuNant' + 'o' → 'kuNanta'.
+        if suffix == 'o' and base and base[-1] not in 'aAiIuUeoāīū':
+            return base + 'a'
+
         # Default: return base as-is
         return base
 
@@ -1224,13 +1252,27 @@ class PrakritUnifiedParser:
         """
         if not base:
             return base
-        for i in range(len(base), 0, -1):
-            if base[:i] in self.verb_roots:
-                return base[:i]
+
+        # 1. Exact match
+        if base in self.verb_roots:
+            return base
+
+        # 2. Vowel restoration: when a vowel-initial suffix like 'anta'/'amANa'
+        # attaches, the root's final vowel is elided (puccha + anta → pucchanta).
+        # After stripping the suffix we have a consonant-final base; restore the
+        # vowel by trying base + a/i/e.
+        vowels = 'aAiIuUeo'
+        if base[-1] not in vowels:
+            for v in ('a', 'i', 'e'):
+                if base + v in self.verb_roots:
+                    return base + v
+
+        # 3. Sandhi reversal (e→ī, o→ū, etc.)
         for cand, _ in self.apply_vowel_sandhi_reverse(base):
             if cand in self.verb_roots:
                 return cand
-        # Hiatus-y removal: root+y appears when a vowel-initial suffix follows
+
+        # 4. Hiatus-y removal: root+y appears when a vowel-initial suffix follows
         # a vowel-final root (e.g. nI + anta → nIyanta; strip 'anta' → 'nIy' → 'nI')
         hiatus_base = self._strip_hiatus_y(base)
         if hiatus_base:
@@ -1239,6 +1281,18 @@ class PrakritUnifiedParser:
             for cand, _ in self.apply_vowel_sandhi_reverse(hiatus_base):
                 if cand in self.verb_roots:
                     return cand
+            if hiatus_base[-1] not in vowels:
+                for v in ('a', 'i', 'e'):
+                    if hiatus_base + v in self.verb_roots:
+                        return hiatus_base + v
+
+        # 5. Conservative one-character trim: covers cases like gaccha → gacch
+        # where the final stem-vowel was already absorbed. Strictly at most 1
+        # char less to prevent spurious short matches (muN → mu, jAN → jA).
+        if len(base) >= 4 and base[:-1] in self.verb_roots:
+            return base[:-1]
+
+        # 6. Return base unchanged — better than a wrong shorter root.
         return base
 
     _HIATUS_VOWELS = frozenset('aAiIuUeo')
