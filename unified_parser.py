@@ -508,6 +508,19 @@ class PrakritUnifiedParser:
                 'priority': 3,
                 'confidence': 0.90
             },
+            # Instrumental singular for a-stems (purisa + iNa → puriseNa via a+i→e sandhi).
+            # Distinct from dative/genitive plural -Na (which expects an elongated/long
+            # stem-final vowel: purisANa). Higher priority than 'Na' so it wins and
+            # blocks the dat/gen-plural reading for forms like puriseNa, kuNanteNa.
+            'eNa': {
+                'cases': ['instrumental'],
+                'numbers': ['singular'],
+                'genders': ['masculine', 'neuter'],
+                'must_precede': [],
+                'blocks': ['Na', 'a'],
+                'priority': 4,
+                'confidence': 0.92
+            },
             'iM': {
                 'cases': ['nominative', 'accusative'],
                 'numbers': ['plural'],
@@ -1194,6 +1207,11 @@ class PrakritUnifiedParser:
 
         # Nominative/Vocative singular 'e' - from a-stem
         elif suffix == 'e':
+            return base + 'a'
+
+        # Instrumental singular '-eNa' for a-stems: base is the consonant skeleton
+        # of an a-stem (puris + eNa → purisa; kuNant + eNa → kuNanta).
+        elif suffix == 'eNa':
             return base + 'a'
 
         # Accusative singular 'M'
